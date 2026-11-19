@@ -13,7 +13,13 @@ from dotenv import load_dotenv
 from src.agent.conversation import LegalEagleChatAgent
 from src.agent.reviewer import ContractRiskAgent
 from src.config import AppConfig
-from src.evals.runner import run_comprehensive_evaluation, run_holdout_evaluation
+try:
+    from src.evals.runner import run_comprehensive_evaluation, run_holdout_evaluation
+except ImportError:
+    import importlib
+    import src.evals.runner
+    importlib.reload(src.evals.runner)
+    from src.evals.runner import run_comprehensive_evaluation, run_holdout_evaluation
 from src.ingest.parser import parse_contract, parse_text_contract
 from src.ingest.pdf_exporter import generate_pdf_report
 from src.memory.store import MemoryStore
