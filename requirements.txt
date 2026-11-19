@@ -10,8 +10,8 @@ sentence-transformers>=3.0.1
 spacy>=3.7.5
 langsmith>=0.1.95
 scikit-learn>=1.4.2
-pandas>=2.2.2,<3.0.0
-numpy>=1.26.4,<2.0.0
-pyarrow>=17.0.0,<18.0.0
+pandas>=2.2.2
+numpy>=1.26.4
 pyyaml>=6.0.1
 pytest>=8.2.0
+setuptools
