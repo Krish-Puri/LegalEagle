@@ -161,13 +161,24 @@ class ContractRiskAgent:
             chunk = chunks_by_id[classification.chunk_id]
             query = f"{classification.clause_type} {chunk.text[:250]}"
             # Only search playbook and market_precedent sources with strict clause_type filtering
-            evidence[classification.chunk_id] = self.retriever.search(
-                query,
-                k=3,
-                source_types=["playbook", "market_precedent"],
-                clause_type=classification.clause_type,
-                min_score=0.08,
-            )
+            try:
+                evidence[classification.chunk_id] = self.retriever.search(
+                    query,
+                    k=3,
+                    source_types=["playbook", "market_precedent"],
+                    clause_type=classification.clause_type,
+                    min_score=0.08,
+                )
+            except TypeError:
+                try:
+                    evidence[classification.chunk_id] = self.retriever.search(
+                        query,
+                        k=3,
+                        source_types=["playbook", "market_precedent"],
+                        clause_type=classification.clause_type,
+                    )
+                except TypeError:
+                    evidence[classification.chunk_id] = self.retriever.search(query, k=3)
         return evidence
 
     def retrieve_clauses(self, query: str, k: int = 5, contract_id: str | None = None) -> list[RetrievalEvidence]:
@@ -197,13 +208,24 @@ class ContractRiskAgent:
         return score
 
     def search_precedents(self, query: str, k: int = 5, clause_type: str | None = None) -> list[RetrievalEvidence]:
-        return self.retriever.search(
-            query,
-            k=k,
-            source_types=["playbook", "market_precedent"],
-            clause_type=clause_type,
-            min_score=0.08,
-        )
+        try:
+            return self.retriever.search(
+                query,
+                k=k,
+                source_types=["playbook", "market_precedent"],
+                clause_type=clause_type,
+                min_score=0.08,
+            )
+        except TypeError:
+            try:
+                return self.retriever.search(
+                    query,
+                    k=k,
+                    source_types=["playbook", "market_precedent"],
+                    clause_type=clause_type,
+                )
+            except TypeError:
+                return self.retriever.search(query, k=k)
 
     def generate_redline(self, clause_type: str, original_language: str):
         return generate_redline(clause_type, original_language)

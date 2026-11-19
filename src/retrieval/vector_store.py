@@ -86,6 +86,7 @@ class LocalRetriever:
         source_types: list[SourceType] | None = None,
         clause_type: str | None = None,
         min_score: float = 0.05,
+        **kwargs: Any,
     ) -> list[RetrievalEvidence]:
         """Clause-aware, source-type filtered semantic and lexical search.
 

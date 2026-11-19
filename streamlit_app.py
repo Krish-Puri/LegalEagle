@@ -371,6 +371,9 @@ def render_findings_view(scorecard: RiskScorecard) -> None:
 def main() -> None:
     config = get_config()
     memory = MemoryStore(Path(config.db_path))
+    if "retriever_cache_v2" not in st.session_state:
+        st.cache_resource.clear()
+        st.session_state["retriever_cache_v2"] = True
     retriever = get_retriever(str(config.vector_path))
     agent = ContractRiskAgent(config=config, retriever=retriever, memory=memory)
     chat_agent = LegalEagleChatAgent(risk_agent=agent, memory=memory)
