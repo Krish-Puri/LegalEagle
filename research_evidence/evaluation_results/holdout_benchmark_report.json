@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-11-19 20:32:44 UTC",
+  "timestamp": "2026-11-19 20:42:47 UTC",
   "dataset_info": {
     "name": "LegalEagle Unseen Holdout Generalization Benchmark",
     "sample_count": 15,
@@ -14,16 +14,16 @@
     "micro_f1": 0.6667,
     "negative_boilerplate_accuracy": 1.0,
     "false_positive_rate": 0.0,
-    "classification_latency_ms": 31.77
+    "classification_latency_ms": 40.14
   },
   "retrieval_generalization": {
-    "hit@1": 0.7273,
-    "hit@3": 1.0,
-    "mrr": 0.8636,
+    "hit@1": 0.6364,
+    "hit@3": 0.7273,
+    "mrr": 0.6818,
     "queries_evaluated": 11
   },
   "execution_summary": {
-    "total_holdout_latency_ms": 76.42,
+    "total_holdout_latency_ms": 167.66,
     "status": "PASS"
   }
 }
