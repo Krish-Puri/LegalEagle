@@ -1,0 +1,16 @@
+MASTER SERVICES AGREEMENT
+
+1. TERMINATION
+Vendor may terminate this Agreement immediately without notice if Customer fails to pay any invoice or if Vendor determines, in its sole discretion, that continued performance is not commercially desirable.
+
+2. LIMITATION OF LIABILITY
+Customer's liability for payment obligations is unlimited. Vendor will not be liable for any indirect or consequential damages. The liability cap does not apply to Customer's indemnification obligations or any and all losses arising from Customer's use of the services.
+
+3. CONFIDENTIALITY
+Each party shall protect the other party's confidential information using reasonable efforts and shall not disclose it except to employees and advisors with a need to know.
+
+4. GOVERNING LAW
+This Agreement is governed by the laws of the State of Delaware, and the parties consent to exclusive jurisdiction in Delaware courts.
+
+5. ASSIGNMENT
+Customer may not assign this Agreement without Vendor's prior written consent. Vendor may assign this Agreement to any successor or affiliate.

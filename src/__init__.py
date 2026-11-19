@@ -1,0 +1,1 @@
+"""LegalEagle application package."""

@@ -1,0 +1,171 @@
+entries:
+  - id: playbook:termination
+    source_type: playbook
+    source: risk_playbook
+    document_title: "Negotiation Playbook: Termination & Cancellation"
+    clause_category: termination_risk
+    clause_type: termination
+    risk_level: high
+    text: "Immediate termination without notice or cure disrupts core operations. Demand bilateral termination rights, a minimum 30-day written notice, and an opportunity to cure remediable material breaches before contract dissolution."
+
+  - id: market:termination-cure
+    source_type: market_precedent
+    source: market_precedent
+    document_title: "Market Precedent: Bilateral Termination with 30-Day Cure"
+    clause_category: termination_risk
+    clause_type: termination
+    risk_level: medium
+    text: "Market standard commercial contracts provide mutual written notice and a 30-day cure period for material breach before termination. Immediate termination is customarily restricted only to insolvency or uncured confidentiality breach."
+
+  - id: playbook:liability
+    source_type: playbook
+    source: risk_playbook
+    document_title: "Negotiation Playbook: Limitation of Liability & Caps"
+    clause_category: liability_exposure
+    clause_type: limitation of liability
+    risk_level: critical
+    text: "Asymmetric liability structures (where one party faces unlimited liability while the counterparty is capped at a nominal amount like $50) present critical enterprise exposure. Require mutual aggregate liability caps calibrated to 12 months of paid fees and mutual waiver of indirect/consequential damages."
+
+  - id: market:liability-cap
+    source_type: market_precedent
+    source: market_precedent
+    document_title: "Market Precedent: 12-Month Aggregate Fee Cap"
+    clause_category: liability_exposure
+    clause_type: limitation of liability
+    risk_level: high
+    text: "Market standard limitation of liability clauses establish an aggregate cumulative ceiling equal to 6 to 12 months of fees paid or payable under the agreement, with narrow exceptions strictly limited to gross negligence, willful misconduct, and breach of confidentiality."
+
+  - id: playbook:indemnity
+    source_type: playbook
+    source: risk_playbook
+    document_title: "Negotiation Playbook: Indemnification Scope"
+    clause_category: liability_exposure
+    clause_type: indemnification
+    risk_level: high
+    text: "Broad indemnification for 'any and all losses' without fault attribution converts a contract into an unhedged insurance policy. Restrict indemnity to third-party claims directly caused by proven material breach, gross negligence, or willful misconduct, conditioned on prompt notice and right to control defense."
+
+  - id: market:indemnity-procedure
+    source_type: market_precedent
+    source: market_precedent
+    document_title: "Market Precedent: Fault-Based Indemnity & Defense Control"
+    clause_category: liability_exposure
+    clause_type: indemnification
+    risk_level: medium
+    text: "Market standard indemnification is limited to third-party claims arising from IP infringement or gross misconduct, with express procedural conditions: prompt written notice, sole control of defense, and no settlement without the indemnifying party's prior written consent."
+
+  - id: playbook:ip-assignment
+    source_type: playbook
+    source: risk_playbook
+    document_title: "Negotiation Playbook: IP Ownership & Deliverables"
+    clause_category: ip_ownership
+    clause_type: ip assignment
+    risk_level: high
+    text: "Irrevocable assignment of all custom code, modifications, and deliverables deprives the paying client of valuable operational assets. Ensure customer retains ownership of bespoke deliverables and paid-for custom works, while granting vendor only a limited license to pre-existing platform IP."
+
+  - id: market:ip-assignment
+    source_type: market_precedent
+    source: market_precedent
+    document_title: "Market Precedent: Pre-Existing IP Preservation & Deliverable Ownership"
+    clause_category: ip_ownership
+    clause_type: ip assignment
+    risk_level: high
+    text: "Market standard intellectual property provisions assign only customer-specific deliverables created under an agreed SOW, expressly reserving each party's pre-existing IP, background technology, and independent tools, with a perpetual license granted to the customer to utilize the deliverables."
+
+  - id: playbook:confidentiality
+    source_type: playbook
+    source: risk_playbook
+    document_title: "Negotiation Playbook: Confidentiality & Trade Secrets"
+    clause_category: information_protection
+    clause_type: confidentiality
+    risk_level: medium
+    text: "Confidentiality provisions must define covered information, carve out standard exclusions (publicly known, independently developed, lawfully received), specify permitted disclosures, and establish reasonable survival terms (typically 3 to 5 years rather than perpetual)."
+
+  - id: market:confidentiality-standard
+    source_type: market_precedent
+    source: market_precedent
+    document_title: "Market Precedent: Bilateral Confidentiality with Standard Exclusions"
+    clause_category: information_protection
+    clause_type: confidentiality
+    risk_level: medium
+    text: "Market standard non-disclosure clauses are mutual, require commercially reasonable efforts (at least equivalent to care of own secrets), restrict access strictly to need-to-know representatives, and terminate survival within 3 to 5 years following agreement expiration."
+
+  - id: playbook:assignment
+    source_type: playbook
+    source: risk_playbook
+    document_title: "Negotiation Playbook: Agreement Transfer & Assignment"
+    clause_category: operational_control
+    clause_type: assignment
+    risk_level: medium
+    text: "One-sided assignment clauses granting one party uninhibited transfer rights while locking the counterparty create operational risk in M&A. Require mutual consent requirements with customary carveouts for assignment to affiliates or acquisition successors."
+
+  - id: market:assignment-reorganization
+    source_type: market_precedent
+    source: market_precedent
+    document_title: "Market Precedent: M&A and Affiliate Transfer Exception"
+    clause_category: operational_control
+    clause_type: assignment
+    risk_level: medium
+    text: "Standard commercial assignment terms permit either party to assign without counterparty consent in connection with a merger, acquisition, corporate reorganization, or sale of substantially all assets, provided the assignee assumes all obligations in writing."
+
+  - id: playbook:noncompete
+    source_type: playbook
+    source: risk_playbook
+    document_title: "Negotiation Playbook: Non-Compete & Non-Solicitation"
+    clause_category: commercial_restrictions
+    clause_type: non-compete / non-solicit
+    risk_level: high
+    text: "Extended non-compete covenants (e.g., 3-5 years) or worldwide restrictions are anti-competitive and often legally unenforceable. Limit covenants to non-solicitation of directly engaged key personnel, confined to a 12-month post-termination horizon."
+
+  - id: market:noncompete-reasonableness
+    source_type: market_precedent
+    source: market_precedent
+    document_title: "Market Precedent: 12-Month Targeted Non-Solicitation"
+    clause_category: commercial_restrictions
+    clause_type: non-compete / non-solicit
+    risk_level: medium
+    text: "Market standard vendor contracts avoid commercial non-competes on software usage and confine restrictive covenants to a 12-month non-solicitation of active project personnel, excluding general public recruitment advertisements."
+
+  - id: playbook:governing-law
+    source_type: playbook
+    source: risk_playbook
+    document_title: "Negotiation Playbook: Governing Law & Dispute Resolution"
+    clause_category: dispute_resolution
+    clause_type: governing law
+    risk_level: medium
+    text: "Unexpected distant or foreign court jurisdiction creates severe dispute costs. Standardize on predictable, commercial jurisdictions (such as Delaware, New York, or California) or mutual arbitration in a neutral location."
+
+  - id: playbook:payment
+    source_type: playbook
+    source: risk_playbook
+    document_title: "Negotiation Playbook: Invoicing & Payment Terms"
+    clause_category: payment_terms
+    clause_type: revenue / payment obligations
+    risk_level: medium
+    text: "Payment terms should clearly specify Net 30 or Net 45 due dates, establish good-faith dispute escalation procedures without immediate service suspension, and cap late interest fees to statutory maximums."
+
+  - id: playbook:exclusivity
+    source_type: playbook
+    source: risk_playbook
+    document_title: "Negotiation Playbook: Exclusivity Obligations"
+    clause_category: commercial_restrictions
+    clause_type: exclusivity
+    risk_level: high
+    text: "Exclusivity restrictions restrict commercial freedom and market flexibility. Narrow any exclusivity commitment to specific product lines, condition it on minimum performance quotas, and ensure clear termination remedies if quotas are unmet."
+
+  - id: playbook:audit-rights
+    source_type: playbook
+    source: risk_playbook
+    document_title: "Negotiation Playbook: Books & Records Audit Rights"
+    clause_category: compliance_audit
+    clause_type: audit rights
+    risk_level: medium
+    text: "Unrestricted audit access disrupts business operations. Limit audits to once annually during normal business hours upon at least 15 business days prior written notice, conducted by an independent certified auditor subject to confidentiality."
+
+  - id: playbook:change-of-control
+    source_type: playbook
+    source: risk_playbook
+    document_title: "Negotiation Playbook: Change of Control Rights"
+    clause_category: operational_control
+    clause_type: change of control
+    risk_level: medium
+    text: "Automatic contract termination upon change of control can jeopardize financing, investment, or M&A. Restrict termination triggers strictly to direct competitors and require a defined consultation period."

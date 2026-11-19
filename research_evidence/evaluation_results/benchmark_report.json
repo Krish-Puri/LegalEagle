@@ -1,0 +1,335 @@
+{
+  "timestamp": "2026-11-19 19:09:27 UTC",
+  "dataset_info": {
+    "name": "LegalEagle Academic Contract Risk Benchmark",
+    "sample_count": 20,
+    "seed": 42,
+    "split": "test_complete"
+  },
+  "classification_metrics": {
+    "macro_f1": 1.0,
+    "macro_precision": 1.0,
+    "macro_recall": 1.0,
+    "micro_f1": 1.0,
+    "per_class": {
+      "assignment": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 2
+      },
+      "audit rights": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 1
+      },
+      "change of control": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 1
+      },
+      "confidentiality": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 1
+      },
+      "exclusivity": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 1
+      },
+      "governing law": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 1
+      },
+      "indemnification": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 2
+      },
+      "ip assignment": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 3
+      },
+      "limitation of liability": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 2
+      },
+      "most favored nation": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 1
+      },
+      "non-compete / non-solicit": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 2
+      },
+      "revenue / payment obligations": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 1
+      },
+      "termination": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 2
+      }
+    },
+    "confusion_matrix": {
+      "assignment": {
+        "assignment": 2,
+        "audit rights": 0,
+        "change of control": 0,
+        "confidentiality": 0,
+        "exclusivity": 0,
+        "governing law": 0,
+        "indemnification": 0,
+        "ip assignment": 0,
+        "limitation of liability": 0,
+        "most favored nation": 0,
+        "non-compete / non-solicit": 0,
+        "revenue / payment obligations": 0,
+        "termination": 0
+      },
+      "audit rights": {
+        "assignment": 0,
+        "audit rights": 1,
+        "change of control": 0,
+        "confidentiality": 0,
+        "exclusivity": 0,
+        "governing law": 0,
+        "indemnification": 0,
+        "ip assignment": 0,
+        "limitation of liability": 0,
+        "most favored nation": 0,
+        "non-compete / non-solicit": 0,
+        "revenue / payment obligations": 0,
+        "termination": 0
+      },
+      "change of control": {
+        "assignment": 0,
+        "audit rights": 0,
+        "change of control": 1,
+        "confidentiality": 0,
+        "exclusivity": 0,
+        "governing law": 0,
+        "indemnification": 0,
+        "ip assignment": 0,
+        "limitation of liability": 0,
+        "most favored nation": 0,
+        "non-compete / non-solicit": 0,
+        "revenue / payment obligations": 0,
+        "termination": 0
+      },
+      "confidentiality": {
+        "assignment": 0,
+        "audit rights": 0,
+        "change of control": 0,
+        "confidentiality": 1,
+        "exclusivity": 0,
+        "governing law": 0,
+        "indemnification": 0,
+        "ip assignment": 0,
+        "limitation of liability": 0,
+        "most favored nation": 0,
+        "non-compete / non-solicit": 0,
+        "revenue / payment obligations": 0,
+        "termination": 0
+      },
+      "exclusivity": {
+        "assignment": 0,
+        "audit rights": 0,
+        "change of control": 0,
+        "confidentiality": 0,
+        "exclusivity": 1,
+        "governing law": 0,
+        "indemnification": 0,
+        "ip assignment": 0,
+        "limitation of liability": 0,
+        "most favored nation": 0,
+        "non-compete / non-solicit": 0,
+        "revenue / payment obligations": 0,
+        "termination": 0
+      },
+      "governing law": {
+        "assignment": 0,
+        "audit rights": 0,
+        "change of control": 0,
+        "confidentiality": 0,
+        "exclusivity": 0,
+        "governing law": 1,
+        "indemnification": 0,
+        "ip assignment": 0,
+        "limitation of liability": 0,
+        "most favored nation": 0,
+        "non-compete / non-solicit": 0,
+        "revenue / payment obligations": 0,
+        "termination": 0
+      },
+      "indemnification": {
+        "assignment": 0,
+        "audit rights": 0,
+        "change of control": 0,
+        "confidentiality": 0,
+        "exclusivity": 0,
+        "governing law": 0,
+        "indemnification": 2,
+        "ip assignment": 0,
+        "limitation of liability": 0,
+        "most favored nation": 0,
+        "non-compete / non-solicit": 0,
+        "revenue / payment obligations": 0,
+        "termination": 0
+      },
+      "ip assignment": {
+        "assignment": 0,
+        "audit rights": 0,
+        "change of control": 0,
+        "confidentiality": 0,
+        "exclusivity": 0,
+        "governing law": 0,
+        "indemnification": 0,
+        "ip assignment": 3,
+        "limitation of liability": 0,
+        "most favored nation": 0,
+        "non-compete / non-solicit": 0,
+        "revenue / payment obligations": 0,
+        "termination": 0
+      },
+      "limitation of liability": {
+        "assignment": 0,
+        "audit rights": 0,
+        "change of control": 0,
+        "confidentiality": 0,
+        "exclusivity": 0,
+        "governing law": 0,
+        "indemnification": 0,
+        "ip assignment": 0,
+        "limitation of liability": 2,
+        "most favored nation": 0,
+        "non-compete / non-solicit": 0,
+        "revenue / payment obligations": 0,
+        "termination": 0
+      },
+      "most favored nation": {
+        "assignment": 0,
+        "audit rights": 0,
+        "change of control": 0,
+        "confidentiality": 0,
+        "exclusivity": 0,
+        "governing law": 0,
+        "indemnification": 0,
+        "ip assignment": 0,
+        "limitation of liability": 0,
+        "most favored nation": 1,
+        "non-compete / non-solicit": 0,
+        "revenue / payment obligations": 0,
+        "termination": 0
+      },
+      "non-compete / non-solicit": {
+        "assignment": 0,
+        "audit rights": 0,
+        "change of control": 0,
+        "confidentiality": 0,
+        "exclusivity": 0,
+        "governing law": 0,
+        "indemnification": 0,
+        "ip assignment": 0,
+        "limitation of liability": 0,
+        "most favored nation": 0,
+        "non-compete / non-solicit": 2,
+        "revenue / payment obligations": 0,
+        "termination": 0
+      },
+      "revenue / payment obligations": {
+        "assignment": 0,
+        "audit rights": 0,
+        "change of control": 0,
+        "confidentiality": 0,
+        "exclusivity": 0,
+        "governing law": 0,
+        "indemnification": 0,
+        "ip assignment": 0,
+        "limitation of liability": 0,
+        "most favored nation": 0,
+        "non-compete / non-solicit": 0,
+        "revenue / payment obligations": 1,
+        "termination": 0
+      },
+      "termination": {
+        "assignment": 0,
+        "audit rights": 0,
+        "change of control": 0,
+        "confidentiality": 0,
+        "exclusivity": 0,
+        "governing law": 0,
+        "indemnification": 0,
+        "ip assignment": 0,
+        "limitation of liability": 0,
+        "most favored nation": 0,
+        "non-compete / non-solicit": 0,
+        "revenue / payment obligations": 0,
+        "termination": 2
+      }
+    },
+    "classification_latency_ms": 11.22
+  },
+  "retrieval_metrics": {
+    "hit@1": 0.8421,
+    "hit@3": 0.9474,
+    "hit@5": 1.0,
+    "mrr": 0.9079,
+    "total_evaluated_queries": 19
+  },
+  "structured_output_metrics": {
+    "schema_validity_rate": 1.0,
+    "overall_risk_score": 85,
+    "risk_level": "critical",
+    "findings_count": 8,
+    "high_critical_count": 6
+  },
+  "end_to_end_review": {
+    "expected_key_clauses": [
+      "indemnification",
+      "termination",
+      "ip assignment",
+      "non-compete / non-solicit",
+      "assignment",
+      "limitation of liability"
+    ],
+    "detected_clauses": [
+      "termination",
+      "assignment",
+      "confidentiality",
+      "non-compete / non-solicit",
+      "limitation of liability",
+      "ip assignment",
+      "indemnification",
+      "governing law"
+    ],
+    "finding_recall": 1.0,
+    "review_latency_ms": 25.5
+  },
+  "execution_summary": {
+    "total_benchmark_latency_ms": 65.94,
+    "openai_enabled": false,
+    "model_configured": "gpt-4o-mini",
+    "status": "PASS"
+  }
+}

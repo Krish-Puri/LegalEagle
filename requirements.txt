@@ -1,0 +1,17 @@
+streamlit>=1.36.0
+openai>=1.40.0
+pydantic>=2.7.0
+python-dotenv>=1.0.1
+PyMuPDF>=1.24.7
+python-docx>=1.1.2
+chromadb>=0.5.5
+qdrant-client>=1.9.2
+sentence-transformers>=3.0.1
+spacy>=3.7.5
+langsmith>=0.1.95
+scikit-learn>=1.4.2
+pandas>=2.2.2,<3.0.0
+numpy>=1.26.4,<2.0.0
+pyarrow>=17.0.0,<18.0.0
+pyyaml>=6.0.1
+pytest>=8.2.0

@@ -1,0 +1,148 @@
+{
+  "description": "Annotated benchmark dataset for LegalEagle contract risk evaluation (academic/research fixture)",
+  "version": "1.0.0",
+  "seed": 42,
+  "samples": [
+    {
+      "id": "eval_01",
+      "text": "Vendor may terminate this Agreement immediately without notice if Customer fails to pay any invoice or in its sole discretion.",
+      "true_clause_type": "termination",
+      "true_risk_level": "critical",
+      "expected_retrieval_id": "playbook:termination"
+    },
+    {
+      "id": "eval_02",
+      "text": "Either party may terminate this Agreement for material breach if the other party fails to cure within 30 days after written notice.",
+      "true_clause_type": "termination",
+      "true_risk_level": "medium",
+      "expected_retrieval_id": "market:termination-cure"
+    },
+    {
+      "id": "eval_03",
+      "text": "Customer's liability for payment obligations and breaches is unlimited. Vendor's total cumulative aggregate liability shall not exceed fifty dollars ($50.00).",
+      "true_clause_type": "limitation of liability",
+      "true_risk_level": "critical",
+      "expected_retrieval_id": "playbook:liability"
+    },
+    {
+      "id": "eval_04",
+      "text": "In no event shall either party's aggregate liability exceed the total fees paid or payable in the twelve (12) months preceding the claim.",
+      "true_clause_type": "limitation of liability",
+      "true_risk_level": "medium",
+      "expected_retrieval_id": "market:liability-cap"
+    },
+    {
+      "id": "eval_05",
+      "text": "Customer hereby irrevocably assigns to Vendor all right, title, and interest in and to all deliverables, custom code, inventions, and patent rights.",
+      "true_clause_type": "ip assignment",
+      "true_risk_level": "high",
+      "expected_retrieval_id": "playbook:ip-assignment"
+    },
+    {
+      "id": "eval_06",
+      "text": "Customer shall retain sole ownership of all custom deliverables created under the applicable Statement of Work.",
+      "true_clause_type": "ip assignment",
+      "true_risk_level": "low",
+      "expected_retrieval_id": "market:ip-assignment"
+    },
+    {
+      "id": "eval_07",
+      "text": "Customer may not assign this Agreement without Vendor's prior written consent. Vendor may freely assign this Agreement to any successor or affiliate without notice.",
+      "true_clause_type": "assignment",
+      "true_risk_level": "high",
+      "expected_retrieval_id": "playbook:assignment"
+    },
+    {
+      "id": "eval_08",
+      "text": "Neither party may assign this Agreement without consent, except to an affiliate or successor in connection with a merger or sale of assets.",
+      "true_clause_type": "assignment",
+      "true_risk_level": "low",
+      "expected_retrieval_id": "market:assignment-reorganization"
+    },
+    {
+      "id": "eval_09",
+      "text": "Customer agrees to defend, indemnify, and hold harmless Vendor against any and all losses, liabilities, costs, and full attorney fees.",
+      "true_clause_type": "indemnification",
+      "true_risk_level": "high",
+      "expected_retrieval_id": "playbook:indemnity"
+    },
+    {
+      "id": "eval_10",
+      "text": "Each party shall indemnify the other for third-party claims arising from gross negligence or material breach, subject to prompt written notice.",
+      "true_clause_type": "indemnification",
+      "true_risk_level": "medium",
+      "expected_retrieval_id": "market:indemnity-procedure"
+    },
+    {
+      "id": "eval_11",
+      "text": "Each party agrees to maintain in strict confidence all proprietary information received from the other party and use it solely to perform obligations.",
+      "true_clause_type": "confidentiality",
+      "true_risk_level": "medium",
+      "expected_retrieval_id": "playbook:confidentiality"
+    },
+    {
+      "id": "eval_12",
+      "text": "During the term and for a period of five (5) years following termination, Customer shall not directly or indirectly develop competing software products.",
+      "true_clause_type": "non-compete / non-solicit",
+      "true_risk_level": "high",
+      "expected_retrieval_id": "playbook:noncompete"
+    },
+    {
+      "id": "eval_13",
+      "text": "Neither party shall solicit for employment any personnel directly involved in the project for a period of twelve (12) months following termination.",
+      "true_clause_type": "non-compete / non-solicit",
+      "true_risk_level": "medium",
+      "expected_retrieval_id": "market:noncompete-reasonableness"
+    },
+    {
+      "id": "eval_14",
+      "text": "This Agreement shall be governed by the laws of the State of Delaware, and the parties consent to exclusive jurisdiction in Delaware state and federal courts.",
+      "true_clause_type": "governing law",
+      "true_risk_level": "medium",
+      "expected_retrieval_id": "playbook:governing-law"
+    },
+    {
+      "id": "eval_15",
+      "text": "Undisputed invoices are due and payable within thirty (30) days of receipt. Late fees of 1.5% per month may apply to overdue balances.",
+      "true_clause_type": "revenue / payment obligations",
+      "true_risk_level": "medium",
+      "expected_retrieval_id": "playbook:payment"
+    },
+    {
+      "id": "eval_16",
+      "text": "Vendor shall be Customer's sole provider of enterprise cloud analytics services, and Customer shall not purchase from any other vendor.",
+      "true_clause_type": "exclusivity",
+      "true_risk_level": "high",
+      "expected_retrieval_id": "playbook:exclusivity"
+    },
+    {
+      "id": "eval_17",
+      "text": "Customer shall grant Vendor unrestricted audit access to all facilities, accounting records, and source code at any time without prior notice.",
+      "true_clause_type": "audit rights",
+      "true_risk_level": "high",
+      "expected_retrieval_id": "playbook:audit-rights"
+    },
+    {
+      "id": "eval_18",
+      "text": "Upon any change of control, merger, or acquisition of Customer, Vendor may immediately terminate this Agreement without liability.",
+      "true_clause_type": "change of control",
+      "true_risk_level": "high",
+      "expected_retrieval_id": "playbook:change-of-control"
+    },
+    {
+      "id": "eval_19",
+      "text": "Vendor guarantees that all pricing offered to Customer shall be no less favorable than the most favored customer terms granted to any other commercial client.",
+      "true_clause_type": "most favored nation",
+      "true_risk_level": "low",
+      "expected_retrieval_id": ""
+    },
+    {
+      "id": "eval_20",
+      "text": "Customer assigns all rights in any derivative works, enhancements, or bug fixes developed during the performance of services to Vendor.",
+      "true_clause_type": "ip assignment",
+      "true_risk_level": "high",
+      "expected_retrieval_id": "playbook:ip-assignment"
+    }
+  ]
+}
+
