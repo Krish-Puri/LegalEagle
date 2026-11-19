@@ -175,7 +175,6 @@ def get_config() -> AppConfig:
     return AppConfig.from_env()
 
 
-@st.cache_resource
 def get_memory(db_path: str) -> MemoryStore:
     return MemoryStore(Path(db_path))
 
@@ -371,7 +370,7 @@ def render_findings_view(scorecard: RiskScorecard) -> None:
 
 def main() -> None:
     config = get_config()
-    memory = get_memory(str(config.db_path))
+    memory = MemoryStore(Path(config.db_path))
     retriever = get_retriever(str(config.vector_path))
     agent = ContractRiskAgent(config=config, retriever=retriever, memory=memory)
     chat_agent = LegalEagleChatAgent(risk_agent=agent, memory=memory)
@@ -664,7 +663,13 @@ def main() -> None:
         st.caption("Review past analyzed contracts, reviewer notes, and feedback. SQLite local store.")
 
         active_session = st.session_state.get("chat_session_id", "default")
-        contracts = memory.list_contracts(limit=25, session_id=active_session)
+        try:
+            contracts = memory.list_contracts(limit=25, session_id=active_session)
+        except TypeError:
+            try:
+                contracts = memory.list_contracts(limit=25)
+            except Exception:
+                contracts = []
         if contracts:
             st.markdown("##### Past Contract Reviews (Session Isolated)")
             for c in contracts:
@@ -690,7 +695,13 @@ def main() -> None:
                             st.rerun()
             st.markdown("---")
 
-        feedback_rows = memory.list_feedback(limit=20, session_id=active_session)
+        try:
+            feedback_rows = memory.list_feedback(limit=20, session_id=active_session)
+        except TypeError:
+            try:
+                feedback_rows = memory.list_feedback(limit=20)
+            except Exception:
+                feedback_rows = []
         if feedback_rows:
             st.markdown("##### Recent Reviewer Feedback")
             st.dataframe(pd.DataFrame(feedback_rows), use_container_width=True, hide_index=True)

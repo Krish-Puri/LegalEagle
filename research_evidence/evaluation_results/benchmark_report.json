@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-11-19 20:19:08 UTC",
+  "timestamp": "2026-11-19 20:32:42 UTC",
   "dataset_info": {
     "name": "LegalEagle Academic Contract Risk Benchmark",
     "sample_count": 20,
@@ -288,7 +288,7 @@
         "termination": 2
       }
     },
-    "classification_latency_ms": 32.92
+    "classification_latency_ms": 54.29
   },
   "retrieval_metrics": {
     "hit@1": 0.7895,
@@ -307,27 +307,27 @@
   "end_to_end_review": {
     "expected_key_clauses": [
       "indemnification",
-      "limitation of liability",
       "termination",
-      "non-compete / non-solicit",
       "ip assignment",
-      "assignment"
+      "limitation of liability",
+      "assignment",
+      "non-compete / non-solicit"
     ],
     "detected_clauses": [
+      "indemnification",
       "termination",
-      "limitation of liability",
+      "confidentiality",
       "governing law",
       "assignment",
-      "indemnification",
-      "non-compete / non-solicit",
-      "confidentiality",
-      "ip assignment"
+      "ip assignment",
+      "limitation of liability",
+      "non-compete / non-solicit"
     ],
     "finding_recall": 1.0,
-    "review_latency_ms": 66.01
+    "review_latency_ms": 65.27
   },
   "execution_summary": {
-    "total_benchmark_latency_ms": 176.12,
+    "total_benchmark_latency_ms": 273.28,
     "openai_enabled": false,
     "model_configured": "gpt-4o-mini",
     "status": "PASS"
