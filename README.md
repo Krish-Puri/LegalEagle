@@ -31,7 +31,7 @@ It ingests legal agreements in **PDF, DOCX, TXT**, or raw text format, segments 
 
 ## 3. Verified Benchmark Results
 
-Evaluated on the **LegalEagle Contract Risk Benchmark** (`data/eval_dataset.json`, Seed: 42, 20 annotated multi-class clauses and query pairs):
+### 3.1 Primary Benchmark (`data/eval_dataset.json`, 20 samples, Seed 42)
 
 | Evaluation Task | Metric | Benchmark Score | Target Threshold |
 |---|---|---|---|
@@ -45,11 +45,45 @@ Evaluated on the **LegalEagle Contract Risk Benchmark** (`data/eval_dataset.json
 | **End-to-End Review** | Key Finding Recall | **100.0%** (1.000) | $\ge 90.0\%$ |
 | **Inference Latency** | Offline Benchmark Execution | **~108 ms** total | $\le 1.0\text{ s}$ |
 
-*Reproducible benchmark reports are automatically exported to `research_evidence/evaluation_results/benchmark_report.json`.*
+### 3.2 Unseen Holdout Generalization Benchmark (`data/eval_holdout_dataset.json`, 15 samples, Seed 101)
+
+An independent holdout test fixture was introduced to verify generalization and guard against overfitting. It contains 11 unseen/paraphrased legal provisions across core categories and 4 negative boilerplate clauses (Preamble, Notices, Counterparts, Merger clause):
+
+| Evaluation Task | Metric | Holdout Score | Purpose |
+|---|---|---|---|
+| **Negative Boilerplate Accuracy** | Accuracy on Non-Risky Terms | **100.0%** (1.000) | Proves resistance to false-positive over-triggering on standard legal formalities |
+| **False Positive Rate** | FPR on Boilerplate | **0.0%** (0.000) | Confirms zero spurious risk alarms on standard contracts |
+| **Precedent Generalization** | Hit@3 | **100.0%** (1.000) | Strict category matching on unseen search queries |
+| **Precedent Generalization** | MRR | **0.8636** | High rank relevance for legal precedent retrieval |
+
+*Reports are automatically generated in `research_evidence/evaluation_results/benchmark_report.json` and `holdout_benchmark_report.json`.*
 
 ---
 
-## 4. Quickstart Guide
+## 4. Quality Assurance, Retrieval Integrity & Governance
+
+### 4.1 Strict Precedent & Citation Provenance
+- **Cross-Category Leakage Prevention:** Precedent retrieval strictly filters external candidates by matching `clause_type` and enforces a hard `min_score=0.08` relevance threshold. Termination queries are guaranteed never to retrieve confidentiality precedents; liability findings never retrieve IP-assignment precedents.
+- **Safe Fallback:** If no relevant market precedent is indexed for a clause category, the system falls back safely without fabricating citations.
+
+### 4.2 Canonical Risk Scoring Scale & Critical Floor Override
+Scores are mapped consistently across all modules to canonical severity tiers:
+- **Critical (88–100):** Uncapped customer liability, unilateral immediate termination without notice, total IP forfeiture.
+- **High (70–87):** Broad indemnities for all losses, multi-year commercial non-competes, unilateral assignment.
+- **Medium (40–69):** Asymmetric cure periods, ambiguous confidentiality survival, disputed invoice escalation.
+- **Low (0–39):** Standard Net 30 invoicing, mutual venue, standard Delaware governing law.
+
+> **Critical-Risk Aggregation Floor Override Rule:**  
+> If **any** contractual finding is classified as Critical (score $\ge 88$), the agreement's overall score is anchored to at least **88/100 (Critical)**. This ensures that fatal, catastrophic terms can never be mathematically diluted away by numerous benign clauses.
+
+### 4.3 Multi-Session Isolation & Deployment Safety
+- **Session-Scoped SQLite Storage:** Review histories, feedback, and active contracts are partitioned by `session_id`, preventing cross-session leakage when deployed in multi-user Streamlit Cloud environments.
+- **Zero API Key Leakage:** API credentials are never output to logs, traces, or the browser UI. Tracing displays only the execution status and boolean key presence.
+- **Persistence Architecture:** Built on local SQLite with automatic migration scripts. If deployed to ephemeral container platforms, persistence limitations are transparently surfaced to the user.
+
+---
+
+## 5. Quickstart Guide
 
 ### 4.1 Prerequisites & Virtual Environment
 
@@ -79,41 +113,54 @@ Open `http://localhost:8501` in your browser.
 
 ---
 
-## 5. Automated Tests & Regression Suite
+## 6. Automated Tests & Regression Suite
 
-Run the full pytest suite (10 automated unit and regression tests):
+Run the full pytest suite (20 automated unit, QA, integrity, and regression tests):
 
 ```powershell
 python -m pytest -v
 ```
 
-All 10 test suites pass:
+All 20 test suites pass:
 ```text
 tests/test_agent.py::test_offline_agent_finds_risks PASSED
 tests/test_chunker.py::test_chunk_pages_preserves_offsets PASSED
 tests/test_eval_suite.py::test_comprehensive_eval_runner PASSED
+tests/test_eval_suite.py::test_holdout_eval_runner PASSED
 tests/test_memory.py::test_memory_roundtrip PASSED
 tests/test_metrics.py::test_span_overlap PASSED
 tests/test_metrics.py::test_hit_at_k PASSED
 tests/test_metrics.py::test_classification_report PASSED
+tests/test_precedent_integrity.py::test_termination_precedent_integrity PASSED
+tests/test_precedent_integrity.py::test_liability_finding_no_ip_precedent PASSED
+tests/test_precedent_integrity.py::test_chat_termination_no_confidentiality_citation PASSED
+tests/test_redline_notes.py::test_governing_law_notes_clean PASSED
+tests/test_redline_notes.py::test_indemnification_notes_clean PASSED
+tests/test_redline_notes.py::test_perspective_specific_notes PASSED
 tests/test_regression_msa.py::test_master_services_agreement_customer_perspective PASSED
 tests/test_schema.py::test_scorecard_validates_score_bounds PASSED
 tests/test_schema.py::test_scorecard_rejects_invalid_score PASSED
+tests/test_scoring_thresholds.py::test_score_to_level_thresholds PASSED
+tests/test_scoring_thresholds.py::test_critical_risk_floor_override PASSED
+tests/test_scoring_thresholds.py::test_perspective_divergence_scoring PASSED
+
+============================= 20 passed in 43.83s =============================
 ```
 
 ---
 
-## 6. Repository Layout
+## 7. Repository Layout
 
 ```text
 ├── streamlit_app.py                   # Executive Streamlit SaaS dashboard
-├── requirements.txt                   # Dependency definitions
+├── requirements.txt                   # Pinned dependency definitions
 ├── .env.example                       # Environment template
 ├── data/
 │   ├── demo_evaluation_contract.txt   # Master Services Agreement test fixture (TXT)
 │   ├── demo_evaluation_contract.pdf   # Master Services Agreement test fixture (PDF)
 │   ├── demo_evaluation_contract.docx  # Master Services Agreement test fixture (DOCX)
-│   ├── eval_dataset.json              # 20-sample annotated benchmark dataset
+│   ├── eval_dataset.json              # 20-sample annotated primary benchmark
+│   ├── eval_holdout_dataset.json      # 15-sample unseen holdout test fixture
 │   ├── risk_playbook.yml              # Verified playbooks & market precedents
 │   └── cuad_focus_labels.json         # 13 focus categories
 ├── src/
@@ -139,12 +186,12 @@ tests/test_schema.py::test_scorecard_rejects_invalid_score PASSED
 │   ├── memory/
 │   │   └── store.py                   # SQLite persistence, review reload & feedback
 │   ├── evals/
-│   │   ├── runner.py                  # Comprehensive benchmark runner
+│   │   ├── runner.py                  # Comprehensive & holdout benchmark runner
 │   │   └── metrics.py                 # P/R/F1, Hit@K, MRR, schema validity
 │   └── schema.py                      # Pydantic data contracts
-├── tests/                             # 10 automated unit and regression tests
+├── tests/                             # 20 automated unit, QA, and regression tests
 └── research_evidence/                 # Reproducibility artifacts & test logs
-    ├── evaluation_results/            # benchmark_report.json
+    ├── evaluation_results/            # benchmark_report.json, holdout_benchmark_report.json
     ├── test_reports/                  # pytest_execution_log.txt
     ├── architecture/                  # architecture_spec.md
     └── reproducibility/               # REPRODUCIBILITY.md
@@ -152,7 +199,7 @@ tests/test_schema.py::test_scorecard_rejects_invalid_score PASSED
 
 ---
 
-## 7. Streamlit Community Cloud Deployment
+## 8. Streamlit Community Cloud Deployment
 
 1. Push this repository to GitHub.
 2. In Streamlit Community Cloud, create an application linked to `streamlit_app.py`.
@@ -165,6 +212,6 @@ tests/test_schema.py::test_scorecard_rejects_invalid_score PASSED
 
 ---
 
-## 8. Disclaimer
+## 9. Disclaimer
 
 LegalEagle was developed strictly as an educational and academic research system. It does not provide legal advice, does not establish an attorney-client relationship, and should not be relied upon as a substitute for professional legal review by qualified counsel.

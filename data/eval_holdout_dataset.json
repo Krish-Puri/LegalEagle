@@ -1,0 +1,112 @@
+{
+  "description": "Unseen holdout evaluation dataset for LegalEagle contract risk generalization benchmarks (includes paraphrased, edge, and negative cases)",
+  "version": "1.0.0",
+  "seed": 101,
+  "samples": [
+    {
+      "id": "holdout_01",
+      "text": "Either party may immediately terminate this Agreement by written notice if the other party ceases to do business as a going concern, becomes insolvent, or files a petition under bankruptcy laws.",
+      "true_clause_type": "termination",
+      "true_risk_level": "medium",
+      "expected_retrieval_id": "playbook:termination"
+    },
+    {
+      "id": "holdout_02",
+      "text": "Vendor liability under this Agreement shall be uncapped for data breaches and willful misconduct, but Customer total aggregate liability for all claims shall not exceed five thousand dollars ($5,000).",
+      "true_clause_type": "limitation of liability",
+      "true_risk_level": "low",
+      "expected_retrieval_id": "playbook:liability"
+    },
+    {
+      "id": "holdout_03",
+      "text": "All inventions, improvements, software developments, and discoveries made jointly by the parties in connection with this agreement shall be jointly owned without any right of accounting.",
+      "true_clause_type": "ip assignment",
+      "true_risk_level": "medium",
+      "expected_retrieval_id": "playbook:ip-assignment"
+    },
+    {
+      "id": "holdout_04",
+      "text": "Vendor shall defend and indemnify Customer against any third-party claim alleging that Customer authorized use of the SaaS Platform infringes any valid United States patent or copyright.",
+      "true_clause_type": "indemnification",
+      "true_risk_level": "low",
+      "expected_retrieval_id": "playbook:indemnity"
+    },
+    {
+      "id": "holdout_05",
+      "text": "The obligations of non-disclosure shall survive for five (5) years from disclosure, provided that trade secrets shall remain confidential perpetually until they enter the public domain.",
+      "true_clause_type": "confidentiality",
+      "true_risk_level": "medium",
+      "expected_retrieval_id": "playbook:confidentiality"
+    },
+    {
+      "id": "holdout_06",
+      "text": "Customer shall not actively poach or hire Vendor senior systems architects for eighteen (18) months following delivery, except pursuant to general public job postings.",
+      "true_clause_type": "non-compete / non-solicit",
+      "true_risk_level": "medium",
+      "expected_retrieval_id": "playbook:noncompete"
+    },
+    {
+      "id": "holdout_07",
+      "text": "This agreement shall be governed by Singapore law and any controversy shall be submitted to binding arbitration under SIAC rules in Singapore.",
+      "true_clause_type": "governing law",
+      "true_risk_level": "high",
+      "expected_retrieval_id": "playbook:governing-law"
+    },
+    {
+      "id": "holdout_08",
+      "text": "Customer may withhold payment of disputed charges provided Customer gives written notice within 10 days and pays all undisputed amounts on time.",
+      "true_clause_type": "revenue / payment obligations",
+      "true_risk_level": "low",
+      "expected_retrieval_id": "playbook:payment"
+    },
+    {
+      "id": "holdout_09",
+      "text": "Customer designates Vendor as its exclusive provider of enterprise compliance auditing within the European Union territory.",
+      "true_clause_type": "exclusivity",
+      "true_risk_level": "high",
+      "expected_retrieval_id": "playbook:exclusivity"
+    },
+    {
+      "id": "holdout_10",
+      "text": "Customer may audit Vendor SOC2 compliance reports once annually upon thirty (30) days notice during regular business hours.",
+      "true_clause_type": "audit rights",
+      "true_risk_level": "low",
+      "expected_retrieval_id": "playbook:audit-rights"
+    },
+    {
+      "id": "holdout_11",
+      "text": "A merger, consolidation, or sale of substantially all assets shall not trigger a termination right provided the successor entity possesses equal or greater creditworthiness.",
+      "true_clause_type": "change of control",
+      "true_risk_level": "low",
+      "expected_retrieval_id": "playbook:change-of-control"
+    },
+    {
+      "id": "holdout_12",
+      "text": "This Master Services Agreement is entered into as of May 12, 2026, by and between CloudScale Inc. ('Vendor') and Apex Enterprises LLC ('Customer').",
+      "true_clause_type": "other",
+      "true_risk_level": "low",
+      "expected_retrieval_id": ""
+    },
+    {
+      "id": "holdout_13",
+      "text": "All notices under this Agreement shall be in writing and deemed duly given when delivered by recognized overnight courier or registered mail to the addresses set forth above.",
+      "true_clause_type": "other",
+      "true_risk_level": "low",
+      "expected_retrieval_id": ""
+    },
+    {
+      "id": "holdout_14",
+      "text": "This Agreement may be executed in two or more counterparts, each of which shall be deemed an original. If any provision is held unenforceable, remaining terms remain in full force.",
+      "true_clause_type": "other",
+      "true_risk_level": "low",
+      "expected_retrieval_id": ""
+    },
+    {
+      "id": "holdout_15",
+      "text": "This Agreement constitutes the entire understanding between the parties with respect to the subject matter hereof and supersedes all prior agreements, oral or written.",
+      "true_clause_type": "other",
+      "true_risk_level": "low",
+      "expected_retrieval_id": ""
+    }
+  ]
+}

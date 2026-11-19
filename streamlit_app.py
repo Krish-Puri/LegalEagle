@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 from src.agent.conversation import LegalEagleChatAgent
 from src.agent.reviewer import ContractRiskAgent
 from src.config import AppConfig
-from src.evals.runner import run_comprehensive_evaluation
+from src.evals.runner import run_comprehensive_evaluation, run_holdout_evaluation
 from src.ingest.parser import parse_contract, parse_text_contract
 from src.ingest.pdf_exporter import generate_pdf_report
 from src.memory.store import MemoryStore
@@ -227,8 +227,22 @@ def render_findings_view(scorecard: RiskScorecard) -> None:
 
     st.markdown("### Clause-Level Risk Analysis")
 
-    # Filter toolbar
-    filter_col1, filter_col2 = st.columns([1, 2])
+    # Severity scale helper
+    with st.expander("ℹ️ Severity Classification Thresholds & Action Matrix", expanded=False):
+        st.markdown(
+            """
+            | Severity Tier | Risk Score Band | Typical Indicators | Recommended Action |
+            | :--- | :--- | :--- | :--- |
+            | <span style="color:#EF4444; font-weight:700;">CRITICAL</span> | **88 – 100** | Uncapped customer liability, unilateral immediate termination without notice, forfeiture of company IP | **Hard Stop**: Reject as drafted; require mutual caps and standard notice before execution. |
+            | <span style="color:#F87171; font-weight:600;">HIGH</span> | **70 – 87** | Indemnity for 'all losses', 5-year non-competes, unilateral assignment to successors | **High Priority**: Negotiate bilaterally; narrow restriction scope and insert market remedies. |
+            | <span style="color:#FBBF24; font-weight:600;">MEDIUM</span> | **40 – 69** | Asymmetric cure periods, ambiguous confidentiality survival, disputed invoice escalation | **Standard Review**: Request clarification and reciprocal commercial terms. |
+            | <span style="color:#34D399; font-weight:600;">LOW</span> | **0 – 39** | Standard Net 30 invoicing, mutual venue, standard Delaware governing law | **Acceptable**: Commercially standard; no redlining required. |
+            """,
+            unsafe_allow_html=True,
+        )
+
+    # Filter & navigation toolbar
+    filter_col1, filter_col2, filter_col3 = st.columns([1, 1, 1])
     with filter_col1:
         severity_filter = st.selectbox(
             "Filter by severity",
@@ -236,7 +250,13 @@ def render_findings_view(scorecard: RiskScorecard) -> None:
             index=0,
         )
     with filter_col2:
-        search_query = st.text_input("Filter by clause text or keyword", placeholder="Search clauses...")
+        search_query = st.text_input("Filter by keyword", placeholder="Search clauses...")
+    with filter_col3:
+        jump_options = ["All Findings (Collapsed)"] + [
+            f"{i}. {f.clause_type.title()} [{f.risk_level.upper()}] (Score: {f.risk_score})"
+            for i, f in enumerate(scorecard.findings, start=1)
+        ]
+        jump_selection = st.selectbox("Jump to specific finding", jump_options, index=0)
 
     filtered = scorecard.findings
     if severity_filter == "Critical Only":
@@ -276,7 +296,8 @@ def render_findings_view(scorecard: RiskScorecard) -> None:
         badge = f":{'red' if finding.risk_level in {'critical', 'high'} else 'orange' if finding.risk_level == 'medium' else 'green'}[{finding.risk_level.upper()}]"
         label = f"{idx}. {finding.clause_type.title()} — {badge} (Score: {finding.risk_score}/100)"
 
-        with st.expander(label, expanded=(idx <= 2)):
+        is_jump_target = jump_selection != "All Findings (Collapsed)" and jump_selection.startswith(f"{idx}.")
+        with st.expander(label, expanded=is_jump_target):
             col_l, col_r = st.columns([3, 2])
 
             with col_l:
@@ -434,7 +455,8 @@ def main() -> None:
                         reviewer_preferences=reviewer_preferences,
                         reviewing_party=reviewing_party,
                     )
-                    contract_id = memory.save_contract_analysis(parsed, scorecard)
+                    active_session = st.session_state.get("chat_session_id", "default")
+                    contract_id = memory.save_contract_analysis(parsed, scorecard, session_id=active_session)
 
                     if party_key.strip():
                         memory.save_party_summary(
@@ -460,6 +482,18 @@ def main() -> None:
 
             st.markdown("---")
             render_kpi_cards(scorecard)
+
+            # Critical Risk Floor Override banner
+            critical_findings = [f for f in scorecard.findings if f.risk_level == "critical" or f.risk_score >= 88]
+            if critical_findings and scorecard.risk_level.lower() == "critical":
+                crit_types = ", ".join({f.clause_type.title() for f in critical_findings})
+                st.markdown(
+                    f"""<div style="background: rgba(220, 38, 38, 0.12); border-left: 4px solid #EF4444; border-radius: 4px; padding: 0.8rem 1.2rem; margin: 1rem 0;">
+                        <strong style="color: #F87171;">⚠️ Critical-Risk Floor Override Active:</strong>
+                        <span style="color: #F3F4F6;"> Identified {len(critical_findings)} fatal provision(s) ({crit_types}). Under LegalEagle governance rules, critical exposure overrides general clause dilution to guarantee an executive score floor of 88/100 (Critical).</span>
+                    </div>""",
+                    unsafe_allow_html=True,
+                )
 
             # Contract Summary Box
             st.info(f"**Executive Summary ({scorecard.reviewing_party.upper()} Perspective):** {scorecard.contract_summary}")
@@ -618,9 +652,10 @@ def main() -> None:
         st.markdown("#### Contract Audit History & Feedback Memory")
         st.caption("Review past analyzed contracts, reviewer notes, and feedback. SQLite local store.")
 
-        contracts = memory.list_contracts(limit=25)
+        active_session = st.session_state.get("chat_session_id", "default")
+        contracts = memory.list_contracts(limit=25, session_id=active_session)
         if contracts:
-            st.markdown("##### Past Contract Reviews")
+            st.markdown("##### Past Contract Reviews (Session Isolated)")
             for c in contracts:
                 c_col1, c_col2, c_col3, c_col4 = st.columns([1, 3, 2, 2])
                 with c_col1:
@@ -644,7 +679,7 @@ def main() -> None:
                             st.rerun()
             st.markdown("---")
 
-        feedback_rows = memory.list_feedback(limit=20)
+        feedback_rows = memory.list_feedback(limit=20, session_id=active_session)
         if feedback_rows:
             st.markdown("##### Recent Reviewer Feedback")
             st.dataframe(pd.DataFrame(feedback_rows), use_container_width=True, hide_index=True)
@@ -669,15 +704,24 @@ def main() -> None:
         with eval_col4:
             st.metric("Finding Recall", "100.0%", help="Recall of critical contract risks on standard regression fixture.")
 
-        if st.button("Run Full Benchmark Suite", type="primary"):
-            with st.spinner("Running classification, retrieval, and regression benchmarks..."):
-                results = run_comprehensive_evaluation(agent)
-                st.session_state["eval_results"] = results
-                st.success("Benchmark completed! Results saved to research_evidence/evaluation_results/benchmark_report.json.")
+        bench_col1, bench_col2 = st.columns(2)
+        with bench_col1:
+            if st.button("Run Core Benchmark Suite", type="primary", use_container_width=True):
+                with st.spinner("Running classification, retrieval, and regression benchmarks..."):
+                    results = run_comprehensive_evaluation(agent)
+                    st.session_state["eval_results"] = results
+                    st.success("Core benchmark completed! Saved to research_evidence/evaluation_results/benchmark_report.json.")
+
+        with bench_col2:
+            if st.button("Run Holdout Generalization Benchmark", use_container_width=True):
+                with st.spinner("Evaluating unseen holdout clauses, edge cases, and negative boilerplate..."):
+                    holdout_results = run_holdout_evaluation(agent)
+                    st.session_state["holdout_eval_results"] = holdout_results
+                    st.success("Holdout evaluation completed! Saved to research_evidence/evaluation_results/holdout_benchmark_report.json.")
 
         if "eval_results" in st.session_state:
             res = st.session_state["eval_results"]
-            st.markdown("##### Benchmark Results Summary")
+            st.markdown("##### Core Benchmark Results")
             st.json(
                 {
                     "timestamp": res["timestamp"],
@@ -689,6 +733,11 @@ def main() -> None:
                     "execution_summary": res["execution_summary"],
                 }
             )
+
+        if "holdout_eval_results" in st.session_state:
+            h_res = st.session_state["holdout_eval_results"]
+            st.markdown("##### Unseen Holdout Generalization Results")
+            st.json(h_res)
 
 
 if __name__ == "__main__":

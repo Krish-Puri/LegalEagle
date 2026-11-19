@@ -4,7 +4,7 @@ from pathlib import Path
 
 from src.agent.reviewer import ContractRiskAgent
 from src.config import AppConfig
-from src.evals.runner import run_comprehensive_evaluation
+from src.evals.runner import run_comprehensive_evaluation, run_holdout_evaluation
 from src.memory.store import MemoryStore
 from src.retrieval.vector_store import LocalRetriever
 
@@ -37,4 +37,26 @@ def test_comprehensive_eval_runner(tmp_path):
     # Verify saved report
     report_file = Path("research_evidence/evaluation_results/benchmark_report.json")
     assert report_file.exists()
+
+
+def test_holdout_eval_runner(tmp_path):
+    config = AppConfig.from_env()
+    memory = MemoryStore(tmp_path / "memory.sqlite3")
+    retriever = LocalRetriever(tmp_path / "vector", config=config)
+    agent = ContractRiskAgent(config, retriever, memory)
+
+    holdout_results = run_holdout_evaluation(agent, Path("data/eval_holdout_dataset.json"))
+
+    assert "classification_generalization" in holdout_results
+    assert "retrieval_generalization" in holdout_results
+    assert holdout_results["execution_summary"]["status"] == "PASS"
+
+    gen = holdout_results["classification_generalization"]
+    assert gen["negative_boilerplate_accuracy"] >= 0.75, (
+        f"Negative boilerplate false-positive resistance was too low: {gen['negative_boilerplate_accuracy']}"
+    )
+    assert gen["false_positive_rate"] <= 0.25
+
+    holdout_file = Path("research_evidence/evaluation_results/holdout_benchmark_report.json")
+    assert holdout_file.exists()
 

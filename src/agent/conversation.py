@@ -56,16 +56,29 @@ class LegalEagleChatAgent:
         # 3. Retrieve relevant external market standard / playbook guidance if grounded
         precedents: list[RetrievalEvidence] = []
         if is_grounded:
-            with trace.step("search_precedents", question=question):
-                precedents = self.risk_agent.search_precedents(question, k=2)
-            tool_calls.append(
-                AgentToolCall(
-                    tool_name="search_precedents",
-                    args={"query": question, "k": "2"},
-                    result_summary=f"Found {len(precedents)} benchmark precedent reference(s).",
-                    latency_ms=trace.events[-1].latency_ms if trace.events else 0,
+            # Infer the specific clause category from top retrieved chunk or question
+            inferred_type: str | None = None
+            if clauses:
+                classified_chunk = self.risk_agent.classify_clause(clauses[0].text)
+                if classified_chunk and classified_chunk[0].clause_type not in {"other", ""}:
+                    inferred_type = classified_chunk[0].clause_type
+            if not inferred_type:
+                classified_q = self.risk_agent.classify_clause(question)
+                if classified_q and classified_q[0].clause_type not in {"other", ""}:
+                    inferred_type = classified_q[0].clause_type
+
+            with trace.step("search_precedents", question=question, clause_type=inferred_type):
+                precedents = self.risk_agent.search_precedents(question, k=2, clause_type=inferred_type)
+
+            if precedents:
+                tool_calls.append(
+                    AgentToolCall(
+                        tool_name="search_precedents",
+                        args={"query": question, "clause_type": inferred_type or "any", "k": "2"},
+                        result_summary=f"Found {len(precedents)} benchmark precedent reference(s) for '{inferred_type or 'general'}'.",
+                        latency_ms=trace.events[-1].latency_ms if trace.events else 0,
+                    )
                 )
-            )
 
         # 4. Compose grounded answer
         answer_text, citations = self._synthesize_answer(
@@ -261,12 +274,23 @@ class LegalEagleChatAgent:
                 f"This provision defines the contractual obligations between the parties regarding this topic."
             )
 
-        # Include precedent / market standard note if available
+        # Include precedent / market standard note if available and category-matched
         precedent_note = ""
         if precedents:
             top_prec = precedents[0]
-            citations.append(f"{top_prec.document_title} (Playbook)")
-            precedent_note = f"\n\n---\n**Market Standard Guidance:**\n{top_prec.text}"
+            prec_cat = (top_prec.clause_category or top_prec.metadata.get("clause_type") or "").lower()
+            top_cat = (top_clause.clause_category or "").lower()
+
+            # Confirm semantic alignment between retrieved clause category and external precedent
+            is_relevant_precedent = True
+            if prec_cat and top_cat and prec_cat not in {"contract clause", "general"} and top_cat not in {"contract clause", "general"}:
+                if prec_cat not in top_cat and top_cat not in prec_cat:
+                    is_relevant_precedent = False
+
+            if is_relevant_precedent:
+                citations.append(f"{top_prec.document_title} (Playbook)")
+                cat_label = f" ({top_prec.clause_category})" if top_prec.clause_category else ""
+                precedent_note = f"\n\n---\n**Market Standard Guidance{cat_label}:**\n{top_prec.text}"
 
         memory_note = f"\n\n*Reviewer Memory Applied:* {party_memory}" if party_memory else ""
 

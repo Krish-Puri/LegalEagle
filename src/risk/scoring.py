@@ -201,17 +201,39 @@ def category_scores(findings: list[RiskFinding]) -> dict[str, int]:
     return {category: min(100, round(sum(scores) / len(scores))) for category, scores in buckets.items()}
 
 
+def score_to_level(score: int | float) -> RiskLevel:
+    """Canonical conversion from numerical risk score (0-100) to RiskLevel.
+
+    Thresholds:
+    - Critical: 88 - 100 (Uncapped exposure, unilateral immediate termination)
+    - High:     70 - 87  (Disproportionate commercial burden, broad indemnities)
+    - Medium:   40 - 69  (Standard terms requiring negotiation/clarification)
+    - Low:       0 - 39  (Benign or standard commercial terms)
+    """
+    s = round(float(score))
+    if s >= 88:
+        return "critical"
+    if s >= 70:
+        return "high"
+    if s >= 40:
+        return "medium"
+    return "low"
+
+
 def overall_score(findings: list[RiskFinding], missing: list[str]) -> int:
     """Documented aggregation strategy:
 
     Formula:
-    1. Highest-severity finding establishes a hard floor:
-       - If any Critical finding (score >= 88): overall floor is at least 75 (High/Critical)
-       - If any High finding (score >= 70): overall floor is at least 55
-       - This guarantees a single fatal liability clause is never diluted away by benign clauses.
-    2. Rank-decayed weighted score of top findings:
+    1. Critical-Risk Aggregation Floor Override:
+       If ANY finding is classified as Critical (risk_score >= 88 or risk_level == 'critical'),
+       the contract's aggregate risk score is guaranteed to meet or exceed the Critical Floor (88).
+       This ensures that a single fatal, catastrophic liability clause is never diluted away
+       by 20 benign standard boilerplate clauses.
+    2. High-Risk Floor:
+       If ANY finding is High (risk_score >= 70 or risk_level == 'high'), the floor is guaranteed at least 65.
+    3. Rank-decayed weighted score of findings:
        Scores are sorted descending; top finding has weight 1.0, 2nd has 0.7, 3rd has 0.5, etc.
-    3. Missing clause penalty:
+    4. Missing clause penalty:
        Each missing critical clause adds 3 points (capped at 12).
     """
     if not findings and not missing:
@@ -221,6 +243,8 @@ def overall_score(findings: list[RiskFinding], missing: list[str]) -> int:
 
     scores = sorted((f.risk_score for f in findings), reverse=True)
     max_score = scores[0]
+    has_critical = any(f.risk_level == "critical" or f.risk_score >= 88 for f in findings)
+    has_high = any(f.risk_level == "high" or f.risk_score >= 70 for f in findings)
 
     # Rank-decay weights: 1.0, 0.7, 0.5, 0.35, 0.25, 0.15...
     decay_weights = [1.0 / (1.0 + 0.45 * i) for i in range(len(scores))]
@@ -229,12 +253,13 @@ def overall_score(findings: list[RiskFinding], missing: list[str]) -> int:
     decayed_avg = weighted_sum / sum_weights
 
     # Floor based on maximum severity finding
-    if max_score >= 92:
-        floor = 78  # Critical threshold
-    elif max_score >= 80:
-        floor = 68
-    elif max_score >= 70:
-        floor = 52
+    if has_critical:
+        # Critical finding anchors overall severity to Critical (>= 88)
+        floor = 88
+    elif has_high:
+        floor = 65
+    elif max_score >= 50:
+        floor = 45
     else:
         floor = 20
 

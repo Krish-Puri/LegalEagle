@@ -1,20 +1,30 @@
 ============================= test session starts =============================
-platform win32 -- Python 3.12.0, pytest-9.2.0, pluggy-1.7.0 -- D:\Desktop\Projects\LegalEagle\.venv\Scripts\python.exe
+platform win32 -- Python 3.12.0, pytest-9.2.0, pluggy-1.7.0 -- C:\Users\LENOVO\AppData\Local\Programs\Python\Python312\python.exe
 cachedir: .pytest_cache
 rootdir: D:\Desktop\Projects\LegalEagle
-plugins: anyio-4.16.0, langsmith-0.15.0
-collecting ... collected 10 items
+plugins: anyio-4.16.0, langsmith-0.15.0, asyncio-1.4.1.post1
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 20 items
 
-tests/test_agent.py::test_offline_agent_finds_risks PASSED               [ 10%]
-tests/test_chunker.py::test_chunk_pages_preserves_offsets PASSED         [ 20%]
-tests/test_eval_suite.py::test_comprehensive_eval_runner PASSED          [ 30%]
-tests/test_memory.py::test_memory_roundtrip PASSED                       [ 40%]
-tests/test_metrics.py::test_span_overlap PASSED                          [ 50%]
-tests/test_metrics.py::test_hit_at_k PASSED                              [ 60%]
-tests/test_metrics.py::test_classification_report PASSED                 [ 70%]
-tests/test_regression_msa.py::test_master_services_agreement_customer_perspective PASSED [ 80%]
-tests/test_schema.py::test_scorecard_validates_score_bounds PASSED       [ 90%]
-tests/test_schema.py::test_scorecard_rejects_invalid_score PASSED        [100%]
+tests/test_agent.py::test_offline_agent_finds_risks PASSED               [  5%]
+tests/test_chunker.py::test_chunk_pages_preserves_offsets PASSED         [ 10%]
+tests/test_eval_suite.py::test_comprehensive_eval_runner PASSED          [ 15%]
+tests/test_eval_suite.py::test_holdout_eval_runner PASSED                [ 20%]
+tests/test_memory.py::test_memory_roundtrip PASSED                       [ 25%]
+tests/test_metrics.py::test_span_overlap PASSED                          [ 30%]
+tests/test_metrics.py::test_hit_at_k PASSED                              [ 35%]
+tests/test_metrics.py::test_classification_report PASSED                 [ 40%]
+tests/test_precedent_integrity.py::test_termination_precedent_integrity PASSED [ 45%]
+tests/test_precedent_integrity.py::test_liability_finding_no_ip_precedent PASSED [ 50%]
+tests/test_precedent_integrity.py::test_chat_termination_no_confidentiality_citation PASSED [ 55%]
+tests/test_redline_notes.py::test_governing_law_notes_clean PASSED       [ 60%]
+tests/test_redline_notes.py::test_indemnification_notes_clean PASSED     [ 65%]
+tests/test_redline_notes.py::test_perspective_specific_notes PASSED      [ 70%]
+tests/test_regression_msa.py::test_master_services_agreement_customer_perspective PASSED [ 75%]
+tests/test_schema.py::test_scorecard_validates_score_bounds PASSED       [ 80%]
+tests/test_schema.py::test_scorecard_rejects_invalid_score PASSED        [ 85%]
+tests/test_scoring_thresholds.py::test_score_to_level_thresholds PASSED  [ 90%]
+tests/test_scoring_thresholds.py::test_critical_risk_floor_override PASSED [ 95%]
+tests/test_scoring_thresholds.py::test_perspective_divergence_scoring PASSED [100%]
 
-============================= 10 passed in 23.40s =============================
-
+============================= 20 passed in 43.83s =============================

@@ -17,8 +17,9 @@ from src.risk.scoring import (
     category_scores,
     evaluate_clause_risk,
     overall_score,
+    score_to_level,
 )
-from src.risk.triggers import triggering_language
+from src.risk.triggers import detailed_risk_triggers, triggering_language
 from src.schema import (
     ClauseClassification,
     MarketStandard,
@@ -29,6 +30,90 @@ from src.schema import (
     RiskScorecard,
     risk_weight,
 )
+
+
+# Category-specific negotiation notes tailored to party perspective and risk tier
+CATEGORY_NEGOTIATION_NOTES: dict[str, dict[str, str]] = {
+    "termination": {
+        "critical": "Priority 1 Redline: Strike unilateral immediate termination without notice; demand a mutual 30-day written notice with a mandatory cure period for remediable breach.",
+        "high": "High-Priority Redline: Equalize termination notice periods and remove sole-discretion cancellation rights.",
+        "medium": "Negotiation Note: Ensure termination rights are bilateral and specify clear post-termination transition obligations.",
+        "low": "Acceptable as drafted: Mutual termination rights align with commercial standards.",
+    },
+    "limitation of liability": {
+        "critical": "Priority 1 Redline: Eliminate uncapped customer exposure and strike the nominal vendor cap ($50); replace with a mutual aggregate liability cap equal to 12 months of fees.",
+        "high": "High-Priority Redline: Establish reciprocal liability ceilings and ensure carveouts are strictly limited to confidentiality, gross negligence, and IP infringement.",
+        "medium": "Negotiation Note: Verify that exclusions for indirect and consequential damages apply reciprocally to both parties.",
+        "low": "Acceptable as drafted: Liability caps and damages exclusions appear commercially balanced.",
+    },
+    "indemnification": {
+        "critical": "Priority 1 Redline: Reject one-sided indemnity for 'any and all losses'; restrict indemnity strictly to direct third-party claims arising from proven material breach or gross misconduct.",
+        "high": "High-Priority Redline: Condition indemnification on prompt written notice, right to control defense, and no unapproved settlements.",
+        "medium": "Negotiation Note: Ensure indemnity obligations are reciprocal or fault-based with reasonable defense cooperation.",
+        "low": "Acceptable as drafted: Standard third-party IP indemnity with customary defense procedure.",
+    },
+    "ip assignment": {
+        "critical": "Priority 1 Redline: Strike blanket assignment of all code and inventions; require that Customer retains sole ownership of custom deliverables and bespoke work product paid for under the agreement.",
+        "high": "High-Priority Redline: Carve out Customer's pre-existing intellectual property and limit Vendor's rights to pre-existing background tools.",
+        "medium": "Negotiation Note: Clarify license scope to ensure Customer receives a perpetual, worldwide license to utilize delivered materials.",
+        "low": "Acceptable as drafted: Work product ownership and pre-existing IP reservations are properly allocated.",
+    },
+    "assignment": {
+        "critical": "Priority 1 Redline: Strike asymmetric assignment terms; ensure Customer has reciprocal transfer rights in connection with an M&A, merger, or corporate restructuring.",
+        "high": "High-Priority Redline: Require mutual written consent for general assignment, with customary exceptions for affiliates and bona fide successors.",
+        "medium": "Negotiation Note: Add requirement that consent to assignment shall not be unreasonably withheld, conditioned, or delayed.",
+        "low": "Acceptable as drafted: Assignment restrictions provide standard affiliate and successor carveouts.",
+    },
+    "confidentiality": {
+        "critical": "Priority 1 Redline: Bound confidentiality survival to a standard 3-to-5 year term; strike perpetual non-disclosure obligations for standard commercial data.",
+        "high": "High-Priority Redline: Ensure confidentiality obligations are mutual and add standard exclusions (public knowledge, independent development, lawful third-party receipt).",
+        "medium": "Negotiation Note: Define clear standard of care (at least reasonable care) and specify permitted disclosures to legal and financial advisors.",
+        "low": "Acceptable as drafted: Confidentiality definitions and exclusions reflect standard commercial practice.",
+    },
+    "non-compete / non-solicit": {
+        "critical": "Priority 1 Redline: Strike broad multi-year commercial non-competes; replace with a targeted 12-month non-solicitation of active project personnel.",
+        "high": "High-Priority Redline: Exclude general employment solicitations (job board postings) and limit duration to 12 months post-termination.",
+        "medium": "Negotiation Note: Confirm that non-solicitation restrictions are mutual and restricted strictly to directly engaged key personnel.",
+        "low": "Acceptable as drafted: Non-solicitation clause is narrowly tailored and geographically reasonable.",
+    },
+    "governing law": {
+        "critical": "Priority 1 Redline: Reject hostile or distant foreign jurisdiction; designate a neutral, predictable commercial forum (e.g. Delaware or New York).",
+        "high": "High-Priority Redline: Align governing law and court venue with the primary operational jurisdiction of the contracting parties.",
+        "medium": "Negotiation Note: Ensure dispute resolution provisions specify mutual venue and waive jury trial or provide for arbitration if appropriate.",
+        "low": "Acceptable as drafted: Governing law (e.g., Delaware) and venue are commercially standard and predictable.",
+    },
+    "revenue / payment obligations": {
+        "critical": "Priority 1 Redline: Remove vendor rights to immediately suspend services upon billing dispute; establish good-faith dispute notice and escalation periods.",
+        "high": "High-Priority Redline: Standardize payment terms to Net 30 or Net 45 days, and cap late interest charges to statutory maximums.",
+        "medium": "Negotiation Note: Clarify that taxes and reimbursable expenses must be pre-approved in writing.",
+        "low": "Acceptable as drafted: Standard Net 30 invoicing and payment procedure.",
+    },
+    "exclusivity": {
+        "critical": "Priority 1 Redline: Reject exclusivity commitments that restrict commercial freedom; make appointment non-exclusive.",
+        "high": "High-Priority Redline: Condition exclusivity on counterparty meeting minimum revenue and sales quotas with right to terminate if unmet.",
+        "medium": "Negotiation Note: Limit exclusivity scope to specific defined products and geographic territories.",
+        "low": "Acceptable as drafted: Non-exclusive appointment preserves market flexibility.",
+    },
+    "audit rights": {
+        "critical": "Priority 1 Redline: Prohibit unrestricted on-site inspections; limit audits to once annually during business hours upon 15 business days notice.",
+        "high": "High-Priority Redline: Require audits to be performed by an independent certified auditor bound by confidentiality.",
+        "medium": "Negotiation Note: Specify that auditing party bears audit expenses unless a material underpayment (>5%) is proven.",
+        "low": "Acceptable as drafted: Annual audit rights with advance notice are commercially standard.",
+    },
+    "change of control": {
+        "critical": "Priority 1 Redline: Prevent automatic termination upon change of control; allow termination only if the acquiring entity is a direct commercial competitor.",
+        "high": "High-Priority Redline: Require a 30-day consultation period before any termination right can be exercised following a merger or financing.",
+        "medium": "Negotiation Note: Clarify that internal reorganizations and equity financings do not trigger change-of-control provisions.",
+        "low": "Acceptable as drafted: Change of control terms protect legitimate commercial interests without impeding financing.",
+    },
+}
+
+DEFAULT_NEGOTIATION_NOTES: dict[str, str] = {
+    "critical": "Priority 1 Redline: Demand reciprocal obligations, narrow restriction scope, and introduce commercial liability caps.",
+    "high": "High-Priority Redline: Strike one-sided restrictions and conform terms to market benchmarks.",
+    "medium": "Negotiation Note: Clarify definitions and ensure obligations are balanced.",
+    "low": "Acceptable as drafted: Standard commercial provision.",
+}
 
 
 class ContractRiskAgent:
@@ -69,23 +154,24 @@ class ContractRiskAgent:
         parsed: ParsedContract,
         classifications: list[ClauseClassification],
     ) -> dict[str, list[RetrievalEvidence]]:
-        """Retrieve external playbook and precedent guidance (excluding uploaded contract chunks)."""
+        """Retrieve external playbook and precedent guidance strictly matching each clause's category."""
         chunks_by_id = {chunk.id: chunk for chunk in parsed.chunks}
         evidence: dict[str, list[RetrievalEvidence]] = {}
         for classification in classifications:
             chunk = chunks_by_id[classification.chunk_id]
             query = f"{classification.clause_type} {chunk.text[:250]}"
-            # Only search playbook and market_precedent sources to prevent circular citations
+            # Only search playbook and market_precedent sources with strict clause_type filtering
             evidence[classification.chunk_id] = self.retriever.search(
                 query,
                 k=3,
                 source_types=["playbook", "market_precedent"],
                 clause_type=classification.clause_type,
+                min_score=0.08,
             )
         return evidence
 
     def retrieve_clauses(self, query: str, k: int = 5, contract_id: str | None = None) -> list[RetrievalEvidence]:
-        """Retrieve clauses from uploaded contracts with optional contract isolation."""
+        """Retrieve clauses from uploaded contracts with strict contract isolation."""
         filters = {"contract_id": contract_id} if contract_id else None
         return self.retriever.search(query, k=k, filters=filters, source_types=["uploaded_contract"])
 
@@ -110,8 +196,14 @@ class ContractRiskAgent:
         )
         return score
 
-    def search_precedents(self, query: str, k: int = 5) -> list[RetrievalEvidence]:
-        return self.retriever.search(query, k=k, source_types=["playbook", "market_precedent"])
+    def search_precedents(self, query: str, k: int = 5, clause_type: str | None = None) -> list[RetrievalEvidence]:
+        return self.retriever.search(
+            query,
+            k=k,
+            source_types=["playbook", "market_precedent"],
+            clause_type=clause_type,
+            min_score=0.08,
+        )
 
     def generate_redline(self, clause_type: str, original_language: str):
         return generate_redline(clause_type, original_language)
@@ -196,7 +288,7 @@ class ContractRiskAgent:
                 reviewer_preferences=reviewer_preferences,
             )
 
-            # Skip benign low-risk clauses unless confidence is high or requested
+            # Skip benign low-risk clauses unless confidence is high
             if effective_level == "low" and classification.confidence < 0.60:
                 continue
 
@@ -228,13 +320,13 @@ class ContractRiskAgent:
                     requires_human_review=classification.requires_human_review,
                     redline=redline,
                     market_standard=market_standard,
-                    retrieved_evidence_ids=[item.id for item in evidence],
+                    retrieved_evidence_ids=market_standard.precedent_ids if market_standard else [],
                 )
             )
 
         missing = self._missing_clauses(classifications)
         score = overall_score(findings, missing)
-        level = _score_to_level(score)
+        level = score_to_level(score)
         summary = _summary(parsed, findings, missing, reviewing_party)
         notes = reviewer_preferences or self.memory.feedback_context() or "No reviewer-specific preferences applied."
 
@@ -302,28 +394,18 @@ def _business_impact(clause_type: str, risk_level: str, party: ReviewingParty) -
 
 
 def _negotiation_note(clause_type: str, risk_level: str, party: ReviewingParty) -> str:
-    if party == "customer":
-        if risk_level == "critical":
-            return f"Priority 1 Redline: Strike unilateral terms; demand a mutual 12-month liability cap and mandatory 30-day notice with cure period."
-        if risk_level == "high":
-            return f"High-Priority Redline: Narrow {clause_type} scope, demand reciprocal obligations, and retain ownership of custom work product."
-        if risk_level == "medium":
-            return f"Negotiation Note: Propose standard bilateral language with 3-year confidentiality survival and reasonable Net 30 payment terms."
-        return f"Acceptable as drafted: Verify consistency with transaction terms."
-    elif party == "vendor":
-        return f"Vendor Position: Maintain protective language where feasible; offer mutual 12-month cap if customer procurement pushes back."
-    else:
-        return f"Balanced Recommendation: Standardize {clause_type} on market precedents with mutual rights and clear cure periods."
+    """Category-specific and perspective-aware negotiation note generator."""
+    clause_key = clause_type.lower().strip()
+    notes_for_clause = CATEGORY_NEGOTIATION_NOTES.get(clause_key, DEFAULT_NEGOTIATION_NOTES)
+    note = notes_for_clause.get(risk_level, DEFAULT_NEGOTIATION_NOTES.get(risk_level, "Verify deal consistency."))
 
-
-def _score_to_level(score: int) -> RiskLevel:
-    if score >= 75:
-        return "critical"
-    if score >= 50:
-        return "high"
-    if score >= 25:
-        return "medium"
-    return "low"
+    if party == "vendor":
+        if risk_level in {"low", "medium"}:
+            return f"Vendor Position: Maintain protective language as drafted. If Customer procurement objects, offer standard bilateral fallback."
+        return f"Vendor Position: Review commercial reasonableness. Be prepared to offer balanced language if required by enterprise deal terms."
+    elif party == "neutral":
+        return f"Neutral Recommendation: Standardize {clause_type} on market precedent to avoid dispute friction."
+    return note
 
 
 def _summary(parsed: ParsedContract, findings: list[RiskFinding], missing: list[str], party: ReviewingParty) -> str:
@@ -337,20 +419,33 @@ def _summary(parsed: ParsedContract, findings: list[RiskFinding], missing: list[
     top_clauses = ", ".join(label for label, _ in label_counts.most_common(3))
     missing_text = f" Missing key clauses: {', '.join(missing)}." if missing else ""
 
+    override_note = ""
+    if critical_count > 0:
+        override_note = f" (Critical Severity Floor Applied: {critical_count} critical finding(s) anchor the aggregate score)."
+
     return (
         f"Reviewed {parsed.source_name} from the {party.title()} perspective. Identified {len(findings)} finding(s) "
-        f"({critical_count} critical, {high_count} high), concentrated primarily in {top_clauses}.{missing_text}"
+        f"({critical_count} critical, {high_count} high), concentrated primarily in {top_clauses}.{missing_text}{override_note}"
     )
 
 
 def _market_standard(clause_type: str, evidence: list[RetrievalEvidence]) -> MarketStandard | None:
-    # Filter strictly to external reference material
-    precedents = [item for item in evidence if item.source_type in {"playbook", "market_precedent"}]
+    # Filter strictly to external reference material matching this clause category
+    target_type = clause_type.lower().strip()
+    precedents = [
+        item for item in evidence
+        if item.source_type in {"playbook", "market_precedent"}
+        and (
+            target_type == (item.metadata.get("clause_type") or "").lower()
+            or target_type in (item.clause_category or "").lower()
+            or target_type in item.document_title.lower()
+        )
+    ]
     if not precedents:
         return MarketStandard(
-            summary=f"No external market reference material was found for '{clause_type}'.",
+            summary=f"No external market reference material was found specifically matching '{clause_type}'.",
             deviation="Independent benchmark precedent is not indexed for this specific clause category; review using standard commercial guidelines.",
-            source_title="Local Playbook",
+            source_title="Playbook Reference",
             source_type="market_precedent",
             precedent_ids=[],
         )

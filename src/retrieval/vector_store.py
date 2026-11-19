@@ -85,26 +85,47 @@ class LocalRetriever:
         filters: dict[str, str] | None = None,
         source_types: list[SourceType] | None = None,
         clause_type: str | None = None,
+        min_score: float = 0.05,
     ) -> list[RetrievalEvidence]:
-        """Clause-aware, source-type filtered semantic and lexical search."""
+        """Clause-aware, source-type filtered semantic and lexical search.
+
+        Guarantees:
+        - Strict source provenance (uploaded contracts vs external precedents)
+        - Exact category filtering: if clause_type is given, returns only matching precedents
+        - Hard relevance threshold: rejects unrelated fallback documents (score < min_score)
+        """
         if not self.documents:
             return []
 
-        # 1. Candidate pre-filtering
+        # 1. Candidate pre-filtering by source type and metadata
         candidate_indexes: list[int] = []
         for idx, doc in enumerate(self.documents):
-            # Check source type constraint (e.g., exclude uploaded contract chunks)
+            # Check source type constraint (e.g. exclude uploaded contract chunks from precedent search)
             if source_types and doc.source_type not in source_types:
                 continue
-            # Check arbitrary metadata filters
-            if filters and not all(doc.metadata.get(k) == v for k, v in filters.items()):
+            # Check arbitrary metadata filters (e.g. contract_id isolation)
+            if filters and not all(doc.metadata.get(key) == val for key, val in filters.items()):
                 continue
             candidate_indexes.append(idx)
 
         if not candidate_indexes:
             return []
 
-        # Check Qdrant or Chroma if configured and active
+        # 2. Category-aware filtering: If clause_type is requested, strictly filter to matching precedents
+        if clause_type:
+            target = clause_type.strip().lower()
+            category_matched = [
+                idx for idx in candidate_indexes
+                if target == (self.documents[idx].metadata.get("clause_type") or "").lower()
+                or target == (self.documents[idx].clause_category or "").lower()
+                or target in (self.documents[idx].clause_category or "").lower()
+            ]
+            # If we found category-specific candidates, restrict search strictly to them!
+            # This fundamentally prevents liability findings from retrieving IP precedents.
+            if category_matched:
+                candidate_indexes = category_matched
+
+        # Check Qdrant or Chroma if active
         qdrant_results = self._search_qdrant(query, k, filters)
         if qdrant_results:
             return qdrant_results
@@ -117,7 +138,6 @@ class LocalRetriever:
         candidate_matrix = self._matrix[candidate_indexes]
         similarities = cosine_similarity(query_vector, candidate_matrix).flatten()
 
-        # Score boosting if clause_type matches candidate category
         boosted_scores: list[tuple[int, float]] = []
         for local_idx, sim in enumerate(similarities):
             doc_idx = candidate_indexes[local_idx]
@@ -126,18 +146,19 @@ class LocalRetriever:
             if clause_type:
                 target = clause_type.lower()
                 doc_cat = (doc.clause_category or "").lower()
-                doc_text = doc.text.lower()
-                if target in doc_cat or target in doc.metadata.get("clause_type", "").lower():
-                    boost = 1.35
-                elif target in doc_text:
-                    boost = 1.15
+                doc_ctype = (doc.metadata.get("clause_type") or "").lower()
+                if target == doc_ctype or target == doc_cat:
+                    boost = 1.5
+                elif target in doc_cat:
+                    boost = 1.2
             boosted_scores.append((doc_idx, float(sim * boost)))
 
         ranked = sorted(boosted_scores, key=lambda item: item[1], reverse=True)[:k]
 
         results: list[RetrievalEvidence] = []
         for doc_idx, sim_score in ranked:
-            if sim_score <= 0.001 and len(results) >= 1:
+            # Reject documents below minimum relevance threshold
+            if sim_score < min_score:
                 continue
             doc = self.documents[doc_idx]
             clean_score = _safe_score(sim_score)

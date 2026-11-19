@@ -27,6 +27,7 @@ class MemoryStore:
                 """
                 CREATE TABLE IF NOT EXISTS contracts (
                     id TEXT PRIMARY KEY,
+                    session_id TEXT DEFAULT 'default',
                     source_name TEXT NOT NULL,
                     created_at TEXT NOT NULL,
                     summary TEXT NOT NULL,
@@ -36,6 +37,7 @@ class MemoryStore:
                 );
                 CREATE TABLE IF NOT EXISTS feedback (
                     id TEXT PRIMARY KEY,
+                    session_id TEXT DEFAULT 'default',
                     contract_id TEXT,
                     verdict TEXT NOT NULL,
                     note TEXT NOT NULL,
@@ -59,18 +61,33 @@ class MemoryStore:
                 );
                 """
             )
+            # Safe schema migration for pre-existing SQLite databases
+            try:
+                conn.execute("ALTER TABLE contracts ADD COLUMN session_id TEXT DEFAULT 'default'")
+            except sqlite3.OperationalError:
+                pass
+            try:
+                conn.execute("ALTER TABLE feedback ADD COLUMN session_id TEXT DEFAULT 'default'")
+            except sqlite3.OperationalError:
+                pass
 
-    def save_contract_analysis(self, parsed: ParsedContract, scorecard: RiskScorecard) -> str:
+    def save_contract_analysis(
+        self,
+        parsed: ParsedContract,
+        scorecard: RiskScorecard,
+        session_id: str = "default",
+    ) -> str:
         payload = {"contract": parsed.model_dump(mode="json"), "scorecard": scorecard.model_dump(mode="json")}
         with self._connect() as conn:
             conn.execute(
                 """
                 INSERT OR REPLACE INTO contracts
-                (id, source_name, created_at, summary, risk_score, risk_level, payload)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                (id, session_id, source_name, created_at, summary, risk_score, risk_level, payload)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     parsed.id,
+                    session_id,
                     parsed.source_name,
                     parsed.created_at.isoformat(),
                     scorecard.contract_summary,
@@ -101,12 +118,12 @@ class MemoryStore:
             cursor = conn.execute("DELETE FROM contracts WHERE id = ?", (contract_id,))
             return cursor.rowcount > 0
 
-    def save_feedback(self, contract_id: str, verdict: str, note: str) -> str:
+    def save_feedback(self, contract_id: str, verdict: str, note: str, session_id: str = "default") -> str:
         feedback_id = str(uuid4())
         with self._connect() as conn:
             conn.execute(
-                "INSERT INTO feedback (id, contract_id, verdict, note) VALUES (?, ?, ?, ?)",
-                (feedback_id, contract_id, verdict, note),
+                "INSERT INTO feedback (id, session_id, contract_id, verdict, note) VALUES (?, ?, ?, ?, ?)",
+                (feedback_id, session_id, contract_id, verdict, note),
             )
         return feedback_id
 
@@ -122,26 +139,36 @@ class MemoryStore:
             row = conn.execute("SELECT text FROM preferences WHERE id = 1").fetchone()
         return row["text"] if row else ""
 
-    def list_contracts(self, limit: int = 25, query: str = "") -> list[dict[str, Any]]:
+    def list_contracts(
+        self,
+        limit: int = 25,
+        query: str = "",
+        session_id: str | None = None,
+    ) -> list[dict[str, Any]]:
         with self._connect() as conn:
+            clauses = []
+            params: list[Any] = []
+
+            if session_id:
+                # Isolate to current session or shared demo contracts
+                clauses.append("(session_id = ? OR session_id = 'default' OR session_id = 'demo')")
+                params.append(session_id)
+
             if query.strip():
-                sql = """
-                SELECT id, source_name, created_at, risk_score, risk_level, summary
-                FROM contracts
-                WHERE source_name LIKE ? OR summary LIKE ?
-                ORDER BY created_at DESC
-                LIMIT ?
-                """
+                clauses.append("(source_name LIKE ? OR summary LIKE ?)")
                 pattern = f"%{query.strip()}%"
-                rows = conn.execute(sql, (pattern, pattern, limit)).fetchall()
-            else:
-                sql = """
-                SELECT id, source_name, created_at, risk_score, risk_level, summary
-                FROM contracts
-                ORDER BY created_at DESC
-                LIMIT ?
-                """
-                rows = conn.execute(sql, (limit,)).fetchall()
+                params.extend([pattern, pattern])
+
+            where_clause = f"WHERE {' AND '.join(clauses)}" if clauses else ""
+            sql = f"""
+            SELECT id, source_name, created_at, risk_score, risk_level, summary
+            FROM contracts
+            {where_clause}
+            ORDER BY created_at DESC
+            LIMIT ?
+            """
+            params.append(limit)
+            rows = conn.execute(sql, tuple(params)).fetchall()
 
         formatted = []
         for index, row in enumerate(rows, start=1):
@@ -155,17 +182,27 @@ class MemoryStore:
             formatted.append(d)
         return formatted
 
-    def list_feedback(self, limit: int = 20) -> list[dict[str, Any]]:
+    def list_feedback(self, limit: int = 20, session_id: str | None = None) -> list[dict[str, Any]]:
         with self._connect() as conn:
-            rows = conn.execute(
-                """
+            if session_id:
+                sql = """
                 SELECT id, contract_id, verdict, note, created_at
                 FROM feedback
+                WHERE session_id = ? OR session_id = 'default'
                 ORDER BY created_at DESC
                 LIMIT ?
-                """,
-                (limit,),
-            ).fetchall()
+                """
+                rows = conn.execute(sql, (session_id, limit)).fetchall()
+            else:
+                rows = conn.execute(
+                    """
+                    SELECT id, contract_id, verdict, note, created_at
+                    FROM feedback
+                    ORDER BY created_at DESC
+                    LIMIT ?
+                    """,
+                    (limit,),
+                ).fetchall()
         return [dict(row) for row in rows]
 
     def feedback_context(self, limit: int = 5) -> str:
