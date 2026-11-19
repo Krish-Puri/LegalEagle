@@ -10,16 +10,21 @@ import pandas as pd
 import streamlit as st
 from dotenv import load_dotenv
 
+import importlib
+import sys
+
+# Ensure all src.* modules reload when Streamlit hot-reloads
+for _mod in list(sys.modules.keys()):
+    if _mod.startswith('src.') or _mod == 'src':
+        try:
+            importlib.reload(sys.modules[_mod])
+        except Exception:
+            pass
+
 from src.agent.conversation import LegalEagleChatAgent
 from src.agent.reviewer import ContractRiskAgent
 from src.config import AppConfig
-try:
-    from src.evals.runner import run_comprehensive_evaluation, run_holdout_evaluation
-except ImportError:
-    import importlib
-    import src.evals.runner
-    importlib.reload(src.evals.runner)
-    from src.evals.runner import run_comprehensive_evaluation, run_holdout_evaluation
+from src.evals.runner import run_comprehensive_evaluation, run_holdout_evaluation
 from src.ingest.parser import parse_contract, parse_text_contract
 from src.ingest.pdf_exporter import generate_pdf_report
 from src.memory.store import MemoryStore

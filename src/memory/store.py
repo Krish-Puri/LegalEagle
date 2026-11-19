@@ -144,6 +144,7 @@ class MemoryStore:
         limit: int = 25,
         query: str = "",
         session_id: str | None = None,
+        **kwargs: Any,
     ) -> list[dict[str, Any]]:
         with self._connect() as conn:
             clauses = []
@@ -182,7 +183,7 @@ class MemoryStore:
             formatted.append(d)
         return formatted
 
-    def list_feedback(self, limit: int = 20, session_id: str | None = None) -> list[dict[str, Any]]:
+    def list_feedback(self, limit: int = 20, session_id: str | None = None, **kwargs: Any) -> list[dict[str, Any]]:
         with self._connect() as conn:
             if session_id:
                 sql = """
